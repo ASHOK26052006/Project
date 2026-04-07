@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import pytesseract
+pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
 import sqlite3
 from PIL import Image, ImageOps, ImageEnhance, ImageFilter
 import re
@@ -21,7 +22,6 @@ def init_db():
     conn = sqlite3.connect("scam_reports.db")
     cursor = conn.cursor()
 
-    cursor.execute("DROP TABLE IF EXISTS scam_reports")
 
     cursor.execute(
         """
@@ -1897,5 +1897,5 @@ def get_stats():
 
 
 if __name__ == "__main__":
-    # REMOVED "threaded=True" because Gunicorn handles that
-    app.run(debug=True, port=5500)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
