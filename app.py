@@ -8,7 +8,6 @@ import io
 import requests
 from bs4 import BeautifulSoup
 import pdfplumber
-from pyzbar.pyzbar import decode
 import os
 import gc  # <--- ADDED: Critical for memory cleanup
 from datetime import datetime
@@ -25,7 +24,7 @@ def init_db():
 
     cursor.execute(
         """
-        CREATE TABLE scam_reports (
+        CREATE TABLE IF NOT EXISTS scam_reports (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             content TEXT,
             keywords TEXT,
@@ -1754,22 +1753,7 @@ def extract_text():
                 try:
                     image_bytes = file.read()
                     image = Image.open(io.BytesIO(image_bytes))
-
-                    # --- QR Code Decoding ---
-                    try:
-                        qr_codes = decode(Image.open(io.BytesIO(image_bytes)))
-                        for qr in qr_codes:
-                            extracted_texts.append(
-                                f"QR CODE DATA: {qr.data.decode('utf-8')}"
-                            )
-                    except:
-                        pass
-
-                    # ENABLE MULTI-LANGUAGE OCR
                     image = image.convert("L")
-
-                    # --- ULTRA-LOW MEMORY FIX (THE CHANGE) ---
-                    # 1. Resize to max 1000px (1500px was causing the crash)
                     if image.width > 1000 or image.height > 1000:
                         image.thumbnail((1000, 1000))
 
