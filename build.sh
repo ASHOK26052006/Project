@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
 apt-get update
-apt-get install -y tesseract-ocr libzbar0
+apt-get install -y tesseract-ocr libzbar0 libzbar-dev
 pip install -r requirements.txt
