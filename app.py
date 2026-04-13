@@ -1,7 +1,4 @@
 from flask import Flask, render_template, request, jsonify
-import pytesseract
-import pytesseract
-pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
 import sqlite3
 from PIL import Image, ImageOps, ImageEnhance, ImageFilter
 import re
@@ -1745,46 +1742,35 @@ def extract_text():
                         if pdf_text.strip():
                             extracted_texts.append(pdf_text)
 
-                except Exception as e:
+                except Exception:
                     extracted_texts.append("SYSTEM_ALERT: PDF_PASSWORD_LOCKED")
                     continue
 
             # --- IMAGE SUPPORT ---
             else:
                 try:
+                    import requests
+
                     image_bytes = file.read()
-                    image = Image.open(io.BytesIO(image_bytes))
-                    image = image.convert("L")
 
-                    if image.width > 1000 or image.height > 1000:
-                        image.thumbnail((1000, 1000))
+                    response = requests.post(
+                        "https://api.ocr.space/parse/image",
+                        files={"file": ("image.png", image_bytes)},
+                        data={"apikey": "helloworld"}
+                    )
 
-                    image = ImageOps.autocontrast(image)
+                    result = response.json()
 
-                    # ✅ SAFE OCR BLOCK (NO CRASH)
                     try:
-                        import pytesseract
-                        pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
-
-                        text = pytesseract.image_to_string(image, config="--psm 6")
-
-                    except Exception as ocr_error:
-                        print("OCR ERROR:", ocr_error)
-                        text = "OCR not available"
-
-                    # fallback attempt
-                    if text.strip() and len(text) < 10:
-                        try:
-                            text = pytesseract.image_to_string(image, config="--psm 3")
-                        except:
-                            pass
+                        if "ParsedResults" in result and result["ParsedResults"]:
+                            text = result["ParsedResults"][0]["ParsedText"]
+                        else:
+                            text = "OCR failed"
+                    except:
+                        text = "OCR failed"
 
                     if text.strip():
                         extracted_texts.append(text)
-
-                    del image_bytes
-                    del image
-                    gc.collect()
 
                 except Exception as e:
                     extracted_texts.append(f"Error processing image: {str(e)}")
