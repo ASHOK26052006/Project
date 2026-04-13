@@ -398,8 +398,7 @@ DIGITAL_ARREST_SCAMS = [
     "crime branch",
 ]
 
-POLICE_CHALLAN_SCAMS = [
-    "challan pending",
+POLICE_CHALLAN_SCAMS = ["challan pending",
     "parivahan",
     "court notice",
     "lok adalat",
@@ -413,14 +412,7 @@ POLICE_CHALLAN_SCAMS = [
     "pay fine immediately",
     "fir registered",
     "police case",
-    "e-challan",
-    "click to pay fine",
-    "fine is overdue",
-    "unsettled",
-    "supplementary fees",
-    "enforcement procedures",
-    "traffic fine",
-    "steer clear",
+    "e-challan","click to pay fine","fine is overdue","unsettled","supplementary fees","enforcement procedures","traffic fine","steer clear",
 ]
 
 INDIAN_JOB_SCAMS = [
@@ -1436,11 +1428,6 @@ def get_threat_analysis(text, source_type):
         if phrase in text_lower:
             score += 3
             flags.append(f"⚠️ PANIC TRIGGER: Urgent action demanded ('{phrase}')")
-
-    # --- NEW: AUTOMATIC LEARNING FROM REPORTS ---
-    # --- AUTOMATIC LEARNING FROM DATABASE ---
-    # --- AUTOMATIC LEARNING FROM DATABASE ---
-    # --- AUTOMATIC LEARNING FROM DATABASE ---
     try:
         conn = sqlite3.connect("scam_reports.db")
         cursor = conn.cursor()
@@ -1874,6 +1861,16 @@ def get_stats():
         pass
 
     return jsonify({"total_scams": total_scams, "last_reported": last_reported})
+@app.route("/view_db")
+def view_db():
+    conn = sqlite3.connect("scam_reports.db")
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM scam_reports")
+    data = cursor.fetchall()
+
+    conn.close()
+    return jsonify(data)
 
 
 if __name__ == "__main__":
