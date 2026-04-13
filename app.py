@@ -1420,6 +1420,10 @@ def get_threat_analysis(text, source_type):
                 break
 
     # --- E. THREAT PATTERN MATCHING ---
+    
+    if "otp" in text_lower and "http" in text_lower:
+        score += 2
+        flags.append("⚠️ OTP message contains link (possible phishing)")
     for phrase in SENSITIVE_WARNINGS:
         if phrase in text_lower:
             score += 1
