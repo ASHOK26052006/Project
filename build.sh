@@ -1,4 +1,6 @@
+#!/usr/bin/env bash
+
 apt-get update
-apt-get install -y tesseract-ocr libtesseract-dev libleptonica-dev
-tesseract --version
+apt-get install -y tesseract-ocr
+
 pip install -r requirements.txt

@@ -1730,6 +1730,7 @@ def extract_text():
 
     try:
         for file in files:
+
             # --- PDF SUPPORT ---
             if file.filename.lower().endswith(".pdf"):
                 try:
@@ -1743,8 +1744,7 @@ def extract_text():
 
                         if pdf_text.strip():
                             extracted_texts.append(pdf_text)
-                        else:
-                            pass
+
                 except Exception as e:
                     extracted_texts.append("SYSTEM_ALERT: PDF_PASSWORD_LOCKED")
                     continue
@@ -1755,27 +1755,33 @@ def extract_text():
                     image_bytes = file.read()
                     image = Image.open(io.BytesIO(image_bytes))
                     image = image.convert("L")
+
                     if image.width > 1000 or image.height > 1000:
                         image.thumbnail((1000, 1000))
 
-                    # 2. Simple Autocontrast (Removed heavy filtering)
                     image = ImageOps.autocontrast(image)
-                    # ----------------------------------------
 
+                    # ✅ SAFE OCR BLOCK (NO CRASH)
                     try:
-                        # Attempt multi-language scan
-                        text = pytesseract.image_to_string(image, config="--psm 6")
-                    except:
-                        # Fallback
+                        import pytesseract
+                        pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
+
                         text = pytesseract.image_to_string(image, config="--psm 6")
 
-                    if not text.strip() or len(text) < 10:
-                        text = pytesseract.image_to_string(image, config="--psm 3")
+                    except Exception as ocr_error:
+                        print("OCR ERROR:", ocr_error)
+                        text = "OCR not available"
+
+                    # fallback attempt
+                    if text.strip() and len(text) < 10:
+                        try:
+                            text = pytesseract.image_to_string(image, config="--psm 3")
+                        except:
+                            pass
 
                     if text.strip():
                         extracted_texts.append(text)
 
-                    # 4. Force Cleanup
                     del image_bytes
                     del image
                     gc.collect()
@@ -1786,9 +1792,10 @@ def extract_text():
         full_text = "\n\n--- [NEXT ITEM] ---\n\n".join(extracted_texts)
 
         if not full_text.strip():
-            full_text = "System: No readable text found. \n\nAnalysis: If these images/files contain no text, they are likely SAFE."
+            full_text = "System: No readable text found.\n\nAnalysis: If these images/files contain no text, they are likely SAFE."
 
         return jsonify({"text": full_text})
+
     except Exception as e:
         return jsonify({"error": str(e)})
 
