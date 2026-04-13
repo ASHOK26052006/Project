@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import pytesseract
-import shutil
-pytesseract.pytesseract.tesseract_cmd = shutil.which("tesseract")
+import pytesseract
+pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
 import sqlite3
 from PIL import Image, ImageOps, ImageEnhance, ImageFilter
 import re
@@ -1764,9 +1764,7 @@ def extract_text():
 
                     try:
                         # Attempt multi-language scan
-                        text = pytesseract.image_to_string(
-                            image, lang="eng+hin+tam", config="--psm 6"
-                        )
+                        text = pytesseract.image_to_string(image, config="--psm 6")
                     except:
                         # Fallback
                         text = pytesseract.image_to_string(image, config="--psm 6")
