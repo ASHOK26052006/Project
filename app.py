@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import pytesseract
-pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
+import shutil
+pytesseract.pytesseract.tesseract_cmd = shutil.which("tesseract")
 import sqlite3
 from PIL import Image, ImageOps, ImageEnhance, ImageFilter
 import re
